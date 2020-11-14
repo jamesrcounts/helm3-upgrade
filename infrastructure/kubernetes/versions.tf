@@ -1,0 +1,79 @@
+terraform {
+  required_version = ">= 0.13"
+
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 2.32"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 0.10"
+    }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 1.13.3"
+    }
+
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0.0"
+    }
+  }
+
+  backend "remote" {
+    organization = "jamesrcounts"
+
+    workspaces {
+      name = "helm3-upgrade-apps"
+    }
+  }
+}
+
+provider azurerm {
+  features {
+    key_vault {
+      recover_soft_deleted_key_vaults = true
+      purge_soft_delete_on_destroy    = true
+    }
+
+    template_deployment {
+      delete_nested_items_during_deletion = true
+    }
+
+    virtual_machine {
+      delete_os_disk_on_deletion = true
+    }
+
+    virtual_machine_scale_set {
+      roll_instances_when_required = true
+    }
+  }
+}
+
+locals {
+  kube_config = data.azurerm_kubernetes_cluster.aks.kube_admin_config.0
+}
+
+provider "helm" {
+
+  install_tiller  = true
+  namespace       = "kube-system"
+  service_account = kubernetes_service_account.tiller.metadata.0.name
+  kubernetes {
+    client_certificate     = base64decode(local.kube_config["client_certificate"])
+    client_key             = base64decode(local.kube_config["client_key"])
+    cluster_ca_certificate = base64decode(local.kube_config["cluster_ca_certificate"])
+    host                   = local.kube_config["host"]
+    load_config_file       = "false"
+  }
+}
+
+provider "kubernetes" {
+  client_certificate     = base64decode(local.kube_config["client_certificate"])
+  client_key             = base64decode(local.kube_config["client_key"])
+  cluster_ca_certificate = base64decode(local.kube_config["cluster_ca_certificate"])
+  host                   = local.kube_config["host"]
+  load_config_file       = "false"
+}

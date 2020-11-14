@@ -42,6 +42,12 @@ ARG TFLINT_VERSION=0.8.2
 RUN bash /tmp/library-scripts/terraform-debian.sh "${TERRAFORM_VERSION}" "${TFLINT_VERSION}" \
     && rm -rf /tmp/library-scripts
 
+# Install Helm 2
+RUN curl https://get.helm.sh/helm-v2.16.8-linux-amd64.tar.gz --output /tmp/helm2.tgz && \
+    tar xvzf helm2.tgz && \
+    mkdir -p ~/.local/bin && \
+    mv /tmp/linux-amd64/helm ~/.local/bin/helm2
+
 
 ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
