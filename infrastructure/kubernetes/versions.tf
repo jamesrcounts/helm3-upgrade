@@ -6,9 +6,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 2.32"
     }
+
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 0.10"
+      version = "~> 1.3.2"
     }
 
     kubernetes = {
@@ -57,10 +58,6 @@ locals {
 }
 
 provider "helm" {
-
-  install_tiller  = true
-  namespace       = "kube-system"
-  service_account = kubernetes_service_account.tiller.metadata.0.name
   kubernetes {
     client_certificate     = base64decode(local.kube_config["client_certificate"])
     client_key             = base64decode(local.kube_config["client_key"])
