@@ -49,6 +49,15 @@ RUN curl https://get.helm.sh/helm-v2.16.8-linux-amd64.tar.gz --output /tmp/helm2
     mkdir -p ~/.local/bin && \
     mv /tmp/linux-amd64/helm ~/.local/bin/helm2
 
+# Install Helm 3
+RUN curl https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz --output /tmp/helm3.tgz && \
+    cd /tmp && \
+    tar xvzf /tmp/helm3.tgz && \
+    mkdir -p ~/.local/bin && \
+    mv /tmp/linux-amd64/helm ~/.local/bin/helm3 && \ 
+    helm3 plugin install https://github.com/helm/helm-2to3
+
+
 
 ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
 CMD [ "sleep", "infinity" ]
